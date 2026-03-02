@@ -6,12 +6,8 @@ import ResponseArea from "@/components/ResponseArea";
 import InterviewHeader from "@/components/InterviewHeader";
 
 const INTERVIEW_QUESTIONS = [
-  "Tell me about yourself and what drives you in your career.",
-  "Describe a challenging project you've worked on. What was your role and the outcome?",
-  "How do you handle disagreements with team members?",
-  "Where do you see yourself in five years?",
-  "What's your greatest strength, and how has it helped you professionally?",
-  "Tell me about a time you failed. What did you learn from it?",
+  "What is your favorite consumer product?",
+  "How would you improve it?",
 ];
 
 type InterviewState = "idle" | "asking" | "waiting" | "processing";

@@ -104,16 +104,18 @@ const Index = () => {
               Ready to Practice?
             </h1>
             <p className="text-lg text-muted-foreground max-w-md mx-auto leading-relaxed">
-              Your AI interviewer will guide you through a product sense interview.
+              Your AI interviewer will guide you through a practice interview.
               Take your time and answer naturally.
             </p>
             <button
-              onClick={startInterview}
+              onClick={() => setState("selecting")}
               className="mt-4 px-8 py-3.5 rounded-2xl bg-primary text-primary-foreground font-display font-semibold text-base hover:brightness-110 transition-all duration-200 shadow-lg shadow-primary/20"
             >
-              Begin Interview
+              Get Started
             </button>
           </div>
+        ) : state === "selecting" ? (
+          <CategoryPicker onSelect={startInterview} />
         ) : state === "complete" ? (
           <div className="text-center space-y-6 animate-fade-up max-w-2xl mx-auto px-4">
             <h1 className="text-4xl md:text-5xl font-display font-bold tracking-tight text-foreground">

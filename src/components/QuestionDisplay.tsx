@@ -6,30 +6,9 @@ interface QuestionDisplayProps {
 }
 
 const QuestionDisplay = ({ question, isRevealing }: QuestionDisplayProps) => {
-  const [displayedText, setDisplayedText] = useState("");
-  const [showCursor, setShowCursor] = useState(true);
-
-  useEffect(() => {
-    if (!isRevealing) {
-      setDisplayedText(question);
-      return;
-    }
-
-    setDisplayedText("");
-    let index = 0;
-
-    const interval = setInterval(() => {
-      if (index < question.length) {
-        setDisplayedText(question.slice(0, index + 1));
-        index++;
-      } else {
-        clearInterval(interval);
-        setTimeout(() => setShowCursor(false), 1000);
-      }
-    }, 40);
-
-    return () => clearInterval(interval);
-  }, [question, isRevealing]);
+  // When streaming (isRevealing), just show the question as it grows from the parent
+  // The cursor shows while streaming
+  const showCursor = isRevealing;
 
   return (
     <div className="max-w-2xl mx-auto text-center px-4">

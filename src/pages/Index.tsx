@@ -58,7 +58,8 @@ const Index = () => {
     }
   }, []);
 
-  const startInterview = useCallback(() => {
+  const startInterview = useCallback((category: InterviewCategory) => {
+    categoryRef.current = category;
     messagesRef.current = [];
     setQuestionCount(0);
     fetchNextQuestion();

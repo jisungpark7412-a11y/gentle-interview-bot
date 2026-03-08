@@ -5,9 +5,10 @@ import QuestionDisplay from "@/components/QuestionDisplay";
 import AudioIndicator from "@/components/AudioIndicator";
 import ResponseArea from "@/components/ResponseArea";
 import InterviewHeader from "@/components/InterviewHeader";
+import CategoryPicker, { type InterviewCategory } from "@/components/CategoryPicker";
 import { streamChat, type ChatMessage } from "@/lib/streamChat";
 
-type InterviewState = "idle" | "asking" | "waiting" | "processing" | "complete";
+type InterviewState = "idle" | "selecting" | "asking" | "waiting" | "processing" | "complete";
 
 const Index = () => {
   const [state, setState] = useState<InterviewState>("idle");
@@ -15,6 +16,7 @@ const Index = () => {
   const [currentQuestion, setCurrentQuestion] = useState("");
   const [questionCount, setQuestionCount] = useState(0);
   const messagesRef = useRef<ChatMessage[]>([]);
+  const categoryRef = useRef<InterviewCategory>("product_sense");
 
   const fetchNextQuestion = useCallback(async () => {
     setState("asking");
@@ -24,6 +26,7 @@ const Index = () => {
     try {
       await streamChat({
         messages: messagesRef.current,
+        category: categoryRef.current,
         onDelta: (chunk) => {
           fullText += chunk;
           // Strip the completion marker from display
@@ -52,7 +55,8 @@ const Index = () => {
     }
   }, []);
 
-  const startInterview = useCallback(() => {
+  const startInterview = useCallback((category: InterviewCategory) => {
+    categoryRef.current = category;
     messagesRef.current = [];
     setQuestionCount(0);
     fetchNextQuestion();
@@ -83,7 +87,7 @@ const Index = () => {
       <InterviewHeader
         questionNumber={questionCount}
         totalQuestions={4}
-        isActive={state !== "idle" && state !== "complete"}
+        isActive={state !== "idle" && state !== "selecting" && state !== "complete"}
       />
 
       <main className="flex-1 flex flex-col items-center justify-center gap-10 pb-8 relative z-10">
@@ -97,16 +101,18 @@ const Index = () => {
               Ready to Practice?
             </h1>
             <p className="text-lg text-muted-foreground max-w-md mx-auto leading-relaxed">
-              Your AI interviewer will guide you through a product sense interview.
+              Your AI interviewer will guide you through a practice interview.
               Take your time and answer naturally.
             </p>
             <button
-              onClick={startInterview}
+              onClick={() => setState("selecting")}
               className="mt-4 px-8 py-3.5 rounded-2xl bg-primary text-primary-foreground font-display font-semibold text-base hover:brightness-110 transition-all duration-200 shadow-lg shadow-primary/20"
             >
-              Begin Interview
+              Get Started
             </button>
           </div>
+        ) : state === "selecting" ? (
+          <CategoryPicker onSelect={startInterview} />
         ) : state === "complete" ? (
           <div className="text-center space-y-6 animate-fade-up max-w-2xl mx-auto px-4">
             <h1 className="text-4xl md:text-5xl font-display font-bold tracking-tight text-foreground">
@@ -116,7 +122,7 @@ const Index = () => {
               {currentQuestion}
             </p>
             <button
-              onClick={startInterview}
+              onClick={() => setState("selecting")}
               className="mt-4 px-8 py-3.5 rounded-2xl bg-primary text-primary-foreground font-display font-semibold text-base hover:brightness-110 transition-all duration-200 shadow-lg shadow-primary/20"
             >
               Practice Again

@@ -4,10 +4,12 @@ const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/interview-ch
 
 export async function streamChat({
   messages,
+  category,
   onDelta,
   onDone,
 }: {
   messages: ChatMessage[];
+  category?: string;
   onDelta: (text: string) => void;
   onDone: () => void;
 }) {
@@ -17,7 +19,7 @@ export async function streamChat({
       "Content-Type": "application/json",
       Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
     },
-    body: JSON.stringify({ messages }),
+    body: JSON.stringify({ messages, category }),
   });
 
   if (!resp.ok || !resp.body) {

@@ -125,7 +125,7 @@ const Index = () => {
               {currentQuestion}
             </p>
             <button
-              onClick={startInterview}
+              onClick={() => setState("selecting")}
               className="mt-4 px-8 py-3.5 rounded-2xl bg-primary text-primary-foreground font-display font-semibold text-base hover:brightness-110 transition-all duration-200 shadow-lg shadow-primary/20"
             >
               Practice Again

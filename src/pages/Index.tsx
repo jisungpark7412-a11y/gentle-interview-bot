@@ -90,7 +90,7 @@ const Index = () => {
       <InterviewHeader
         questionNumber={questionCount}
         totalQuestions={4}
-        isActive={state !== "idle" && state !== "complete"}
+        isActive={state !== "idle" && state !== "selecting" && state !== "complete"}
       />
 
       <main className="flex-1 flex flex-col items-center justify-center gap-10 pb-8 relative z-10">

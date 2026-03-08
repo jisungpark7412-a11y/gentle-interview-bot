@@ -1,57 +1,76 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef } from "react";
+import { toast } from "sonner";
 import AIOrb from "@/components/AIOrb";
 import QuestionDisplay from "@/components/QuestionDisplay";
 import AudioIndicator from "@/components/AudioIndicator";
 import ResponseArea from "@/components/ResponseArea";
 import InterviewHeader from "@/components/InterviewHeader";
+import { streamChat, type ChatMessage } from "@/lib/streamChat";
 
-const INTERVIEW_QUESTIONS = [
-  "What is your favorite consumer product?",
-  "How would you improve it?",
-];
-
-type InterviewState = "idle" | "asking" | "waiting" | "processing";
+type InterviewState = "idle" | "asking" | "waiting" | "processing" | "complete";
 
 const Index = () => {
   const [state, setState] = useState<InterviewState>("idle");
-  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [isAudioActive, setIsAudioActive] = useState(false);
-  const [responses, setResponses] = useState<string[]>([]);
+  const [currentQuestion, setCurrentQuestion] = useState("");
+  const [questionCount, setQuestionCount] = useState(0);
+  const messagesRef = useRef<ChatMessage[]>([]);
+
+  const fetchNextQuestion = useCallback(async () => {
+    setState("asking");
+    setCurrentQuestion("");
+
+    let fullText = "";
+    try {
+      await streamChat({
+        messages: messagesRef.current,
+        onDelta: (chunk) => {
+          fullText += chunk;
+          // Strip the completion marker from display
+          const display = fullText.replace("[INTERVIEW_COMPLETE]", "").trim();
+          setCurrentQuestion(display);
+        },
+        onDone: () => {
+          const isComplete = fullText.includes("[INTERVIEW_COMPLETE]");
+          const cleanText = fullText.replace("[INTERVIEW_COMPLETE]", "").trim();
+          messagesRef.current.push({ role: "assistant", content: cleanText });
+
+          if (isComplete) {
+            setCurrentQuestion(cleanText);
+            setState("complete");
+          } else {
+            setQuestionCount((prev) => prev + 1);
+            // Small delay then allow answering
+            setTimeout(() => setState("waiting"), 400);
+          }
+        },
+      });
+    } catch (e: any) {
+      console.error("Stream error:", e);
+      toast.error(e.message || "Failed to get next question");
+      setState("idle");
+    }
+  }, []);
 
   const startInterview = useCallback(() => {
-    setState("asking");
-    setTimeout(() => {
-      setState("waiting");
-    }, INTERVIEW_QUESTIONS[currentQuestionIndex].length * 40 + 500);
-  }, [currentQuestionIndex]);
+    messagesRef.current = [];
+    setQuestionCount(0);
+    fetchNextQuestion();
+  }, [fetchNextQuestion]);
 
   const handleResponse = useCallback(
     (response: string) => {
-      setResponses((prev) => [...prev, response]);
+      messagesRef.current.push({ role: "user", content: response });
       setState("processing");
-
-      // Simulate processing then move to next question
-      setTimeout(() => {
-        if (currentQuestionIndex < INTERVIEW_QUESTIONS.length - 1) {
-          setCurrentQuestionIndex((prev) => prev + 1);
-          setState("asking");
-          setTimeout(() => {
-            setState("waiting");
-          }, INTERVIEW_QUESTIONS[currentQuestionIndex + 1].length * 40 + 500);
-        } else {
-          setState("idle");
-        }
-      }, 1500);
+      // Brief pause then fetch AI's next question
+      setTimeout(() => fetchNextQuestion(), 800);
     },
-    [currentQuestionIndex]
+    [fetchNextQuestion]
   );
 
   const toggleAudio = useCallback(() => {
     setIsAudioActive((prev) => !prev);
   }, []);
-
-  const isComplete =
-    state === "idle" && responses.length === INTERVIEW_QUESTIONS.length;
 
   return (
     <div className="relative min-h-screen flex flex-col bg-background overflow-hidden">
@@ -62,23 +81,23 @@ const Index = () => {
       </div>
 
       <InterviewHeader
-        questionNumber={currentQuestionIndex + 1}
-        totalQuestions={INTERVIEW_QUESTIONS.length}
-        isActive={state !== "idle"}
+        questionNumber={questionCount}
+        totalQuestions={4}
+        isActive={state !== "idle" && state !== "complete"}
       />
 
       <main className="flex-1 flex flex-col items-center justify-center gap-10 pb-8 relative z-10">
         {/* AI Orb */}
         <AIOrb isListening={state === "waiting" || isAudioActive} />
 
-        {/* Question or Welcome */}
-        {state === "idle" && !isComplete ? (
+        {/* Welcome / Question / Complete */}
+        {state === "idle" ? (
           <div className="text-center space-y-6 animate-fade-up">
             <h1 className="text-4xl md:text-5xl font-display font-bold tracking-tight text-foreground">
               Ready to Practice?
             </h1>
             <p className="text-lg text-muted-foreground max-w-md mx-auto leading-relaxed">
-              Your AI interviewer will guide you through a series of questions.
+              Your AI interviewer will guide you through a product sense interview.
               Take your time and answer naturally.
             </p>
             <button
@@ -88,35 +107,30 @@ const Index = () => {
               Begin Interview
             </button>
           </div>
-        ) : isComplete ? (
-          <div className="text-center space-y-6 animate-fade-up">
+        ) : state === "complete" ? (
+          <div className="text-center space-y-6 animate-fade-up max-w-2xl mx-auto px-4">
             <h1 className="text-4xl md:text-5xl font-display font-bold tracking-tight text-foreground">
               Interview Complete
             </h1>
-            <p className="text-lg text-muted-foreground max-w-md mx-auto leading-relaxed">
-              Great job! You answered all {INTERVIEW_QUESTIONS.length} questions.
-              Keep practicing to build your confidence.
+            <p className="text-lg text-muted-foreground leading-relaxed whitespace-pre-line">
+              {currentQuestion}
             </p>
-            <div className="flex items-center justify-center gap-3 text-sm text-accent-foreground">
-              <span className="inline-block w-2 h-2 rounded-full bg-primary" />
-              {responses.length} responses recorded
-            </div>
+            <button
+              onClick={startInterview}
+              className="mt-4 px-8 py-3.5 rounded-2xl bg-primary text-primary-foreground font-display font-semibold text-base hover:brightness-110 transition-all duration-200 shadow-lg shadow-primary/20"
+            >
+              Practice Again
+            </button>
+          </div>
+        ) : state === "processing" ? (
+          <div className="text-center animate-subtle-pulse">
+            <p className="text-muted-foreground text-lg">Thinking...</p>
           </div>
         ) : (
-          <>
-            {state === "processing" ? (
-              <div className="text-center animate-subtle-pulse">
-                <p className="text-muted-foreground text-lg">
-                  Preparing next question...
-                </p>
-              </div>
-            ) : (
-              <QuestionDisplay
-                question={INTERVIEW_QUESTIONS[currentQuestionIndex]}
-                isRevealing={state === "asking"}
-              />
-            )}
-          </>
+          <QuestionDisplay
+            question={currentQuestion}
+            isRevealing={state === "asking"}
+          />
         )}
 
         {/* Response Input */}

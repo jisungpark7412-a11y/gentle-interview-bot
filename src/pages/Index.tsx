@@ -30,6 +30,7 @@ const Index = () => {
       await streamChat({
         messages: messagesRef.current,
         category: categoryRef.current,
+        specificQuestion: specificQuestionRef.current,
         onDelta: (chunk) => {
           fullText += chunk;
           // Strip the completion marker from display

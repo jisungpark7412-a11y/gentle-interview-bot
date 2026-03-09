@@ -133,4 +133,64 @@ describe("useSpeechRecognition", () => {
     unmount();
     expect(mockInstance.abort).toHaveBeenCalledTimes(1);
   });
+
+  it("aborts the existing instance before creating a new one on double-start", () => {
+    const { result } = renderHook(() => useSpeechRecognition());
+
+    // First start — captures the first mock instance
+    act(() => {
+      result.current.start(vi.fn(), vi.fn(), vi.fn());
+    });
+    const firstInstance = mockInstance;
+
+    // Replace the mock so the second call gets a fresh instance
+    const secondInstance = makeMockRecognition();
+    (window.SpeechRecognition as unknown as ReturnType<typeof vi.fn>).mockReturnValueOnce(secondInstance);
+
+    // Second start — should abort the first instance first
+    act(() => {
+      result.current.start(vi.fn(), vi.fn(), vi.fn());
+    });
+
+    expect(firstInstance.abort).toHaveBeenCalledTimes(1);
+    expect(secondInstance.start).toHaveBeenCalledTimes(1);
+  });
+
+  it("sets isListening to false immediately when stop() is called, without waiting for onend", () => {
+    const { result } = renderHook(() => useSpeechRecognition());
+    act(() => {
+      result.current.start(vi.fn(), vi.fn(), vi.fn());
+    });
+    expect(result.current.isListening).toBe(true);
+
+    // Call stop() but do NOT fire onend
+    act(() => {
+      result.current.stop();
+    });
+    expect(result.current.isListening).toBe(false);
+  });
+
+  it("only processes results from event.resultIndex onward, not from 0", () => {
+    const onFinal = vi.fn();
+    const onInterim = vi.fn();
+    const { result } = renderHook(() => useSpeechRecognition());
+    act(() => {
+      result.current.start(onInterim, onFinal, vi.fn());
+    });
+
+    // Simulate a second event where resultIndex=1 — result[0] is already processed
+    act(() => {
+      mockInstance.onresult({
+        resultIndex: 1,
+        results: [
+          Object.assign([{ transcript: "already seen" }], { isFinal: true }),
+          Object.assign([{ transcript: "new result" }], { isFinal: true }),
+        ],
+      } as any);
+    });
+
+    // onFinal should only be called with the new result, not "already seen"
+    expect(onFinal).toHaveBeenCalledTimes(1);
+    expect(onFinal).toHaveBeenCalledWith("new result");
+  });
 });

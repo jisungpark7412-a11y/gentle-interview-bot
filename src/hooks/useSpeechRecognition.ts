@@ -27,6 +27,8 @@ export function useSpeechRecognition() {
   ) => {
     if (!isSupported) return;
 
+    recognitionRef.current?.abort();
+
     const Recognizer = window.SpeechRecognition || window.webkitSpeechRecognition;
     const recognition = new Recognizer();
     recognition.continuous = false;
@@ -36,7 +38,7 @@ export function useSpeechRecognition() {
     recognition.onresult = (event) => {
       let interim = "";
       let final = "";
-      for (let i = 0; i < event.results.length; i++) {
+      for (let i = event.resultIndex; i < event.results.length; i++) {
         const transcript = event.results[i][0].transcript;
         if (event.results[i].isFinal) {
           final += transcript;
@@ -67,6 +69,7 @@ export function useSpeechRecognition() {
 
   const stop = () => {
     recognitionRef.current?.stop();
+    setIsListening(false);
   };
 
   return { isSupported, isListening, start, stop };

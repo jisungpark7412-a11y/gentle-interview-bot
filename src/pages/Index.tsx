@@ -122,7 +122,13 @@ const Index = () => {
             </button>
           </div>
         ) : state === "selecting" ? (
-          <CategoryPicker onSelect={startInterview} />
+          <CategoryPicker onSelect={selectCategory} />
+        ) : state === "selecting-question" ? (
+          <QuestionPicker 
+            category={selectedCategoryRef.current}
+            onSelect={startInterview}
+            onBack={() => setState("selecting")}
+          />
         ) : state === "complete" ? (
           <div className="text-center space-y-6 animate-fade-up max-w-2xl mx-auto px-4">
             <h1 className="text-4xl md:text-5xl font-display font-bold tracking-tight text-foreground">

@@ -98,6 +98,7 @@ const Index = () => {
         questionNumber={questionCount}
         totalQuestions={4}
         isActive={state !== "idle" && state !== "selecting" && state !== "selecting-question" && state !== "complete"}
+        onLogoClick={() => setState("idle")}
       />
 
       <main className="flex-1 flex flex-col items-center justify-center gap-10 pb-8 relative z-10">

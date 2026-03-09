@@ -4,6 +4,7 @@ interface InterviewHeaderProps {
   questionNumber: number;
   totalQuestions: number;
   isActive: boolean;
+  onLogoClick?: () => void;
 }
 
 const InterviewHeader = ({

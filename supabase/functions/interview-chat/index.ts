@@ -94,11 +94,38 @@ serve(async (req) => {
   }
 
   try {
-    const { messages, category } = await req.json();
+    const { messages, category, specificQuestion } = await req.json();
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
-    const systemPrompt = SYSTEM_PROMPTS[category] || SYSTEM_PROMPTS.product_sense;
+    let systemPrompt = SYSTEM_PROMPTS[category] || SYSTEM_PROMPTS.product_sense;
+    
+    // If a specific question is provided, modify the system prompt to start with that question
+    if (specificQuestion && messages.length === 0) {
+      systemPrompt = systemPrompt.replace(
+        /1\. Start with: "[^"]*"/,
+        `1. Start with: "${specificQuestion.question}"`
+      );
+      
+      // For behavioral questions, adjust the specific prompts
+      if (category === "behavioral") {
+        systemPrompt = `You are a warm, professional AI interview coach conducting a behavioral product management interview.
+
+Your interview flow:
+1. Start with: "${specificQuestion.question}"
+2. Ask 2-3 follow-up questions that probe deeper based on their response.
+3. After 3-4 total questions, wrap up with brief, encouraging feedback.
+
+Rules:
+- Ask ONE question at a time. Never ask multiple questions in one message.
+- Keep questions concise (1-2 sentences max).
+- Be conversational and encouraging but professional.
+- Reference the candidate's previous answers to make follow-ups feel natural.
+- Use the STAR method (Situation, Task, Action, Result) to guide probing questions.
+- When wrapping up, mention 1-2 specific strengths and 1 area to improve.
+- End with: "[INTERVIEW_COMPLETE]" on its own line when the interview is done.`;
+      }
+    }
 
     const response = await fetch(
       "https://ai.gateway.lovable.dev/v1/chat/completions",

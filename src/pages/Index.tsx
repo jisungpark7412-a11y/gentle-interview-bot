@@ -6,9 +6,10 @@ import AudioIndicator from "@/components/AudioIndicator";
 import ResponseArea from "@/components/ResponseArea";
 import InterviewHeader from "@/components/InterviewHeader";
 import CategoryPicker, { type InterviewCategory } from "@/components/CategoryPicker";
+import QuestionPicker, { type SpecificQuestion } from "@/components/QuestionPicker";
 import { streamChat, type ChatMessage } from "@/lib/streamChat";
 
-type InterviewState = "idle" | "selecting" | "asking" | "waiting" | "processing" | "complete";
+type InterviewState = "idle" | "selecting" | "selecting-question" | "asking" | "waiting" | "processing" | "complete";
 
 const Index = () => {
   const [state, setState] = useState<InterviewState>("idle");
@@ -17,6 +18,8 @@ const Index = () => {
   const [questionCount, setQuestionCount] = useState(0);
   const messagesRef = useRef<ChatMessage[]>([]);
   const categoryRef = useRef<InterviewCategory>("product_sense");
+  const selectedCategoryRef = useRef<InterviewCategory>("product_sense");
+  const specificQuestionRef = useRef<SpecificQuestion | null>(null);
 
   const fetchNextQuestion = useCallback(async () => {
     setState("asking");
@@ -27,6 +30,7 @@ const Index = () => {
       await streamChat({
         messages: messagesRef.current,
         category: categoryRef.current,
+        specificQuestion: specificQuestionRef.current,
         onDelta: (chunk) => {
           fullText += chunk;
           // Strip the completion marker from display
@@ -55,8 +59,14 @@ const Index = () => {
     }
   }, []);
 
-  const startInterview = useCallback((category: InterviewCategory) => {
-    categoryRef.current = category;
+  const selectCategory = useCallback((category: InterviewCategory) => {
+    selectedCategoryRef.current = category;
+    setState("selecting-question");
+  }, []);
+
+  const startInterview = useCallback((question: SpecificQuestion) => {
+    categoryRef.current = selectedCategoryRef.current;
+    specificQuestionRef.current = question;
     messagesRef.current = [];
     setQuestionCount(0);
     fetchNextQuestion();
@@ -87,7 +97,7 @@ const Index = () => {
       <InterviewHeader
         questionNumber={questionCount}
         totalQuestions={4}
-        isActive={state !== "idle" && state !== "selecting" && state !== "complete"}
+        isActive={state !== "idle" && state !== "selecting" && state !== "selecting-question" && state !== "complete"}
       />
 
       <main className="flex-1 flex flex-col items-center justify-center gap-10 pb-8 relative z-10">
@@ -112,7 +122,13 @@ const Index = () => {
             </button>
           </div>
         ) : state === "selecting" ? (
-          <CategoryPicker onSelect={startInterview} />
+          <CategoryPicker onSelect={selectCategory} />
+        ) : state === "selecting-question" ? (
+          <QuestionPicker 
+            category={selectedCategoryRef.current}
+            onSelect={startInterview}
+            onBack={() => setState("selecting")}
+          />
         ) : state === "complete" ? (
           <div className="text-center space-y-6 animate-fade-up max-w-2xl mx-auto px-4">
             <h1 className="text-4xl md:text-5xl font-display font-bold tracking-tight text-foreground">

@@ -1,4 +1,4 @@
-import { useRef, useState, useEffect } from "react";
+import { useRef, useState, useEffect, useCallback } from "react";
 
 declare global {
   interface Window {
@@ -20,7 +20,7 @@ export function useSpeechRecognition() {
     };
   }, []);
 
-  const start = (
+  const start = useCallback((
     onInterim: (text: string) => void,
     onFinal: (text: string) => void,
     onError: (error: string) => void
@@ -65,12 +65,12 @@ export function useSpeechRecognition() {
     recognitionRef.current = recognition;
     recognition.start();
     setIsListening(true);
-  };
+  }, [isSupported]);
 
-  const stop = () => {
+  const stop = useCallback(() => {
     recognitionRef.current?.stop();
     setIsListening(false);
-  };
+  }, []);
 
   return { isSupported, isListening, start, stop };
 }

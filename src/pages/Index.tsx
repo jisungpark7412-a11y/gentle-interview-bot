@@ -18,6 +18,8 @@ const Index = () => {
   const [questionCount, setQuestionCount] = useState(0);
   const messagesRef = useRef<ChatMessage[]>([]);
   const categoryRef = useRef<InterviewCategory>("product_sense");
+  const selectedCategoryRef = useRef<InterviewCategory>("product_sense");
+  const specificQuestionRef = useRef<SpecificQuestion | null>(null);
 
   const fetchNextQuestion = useCallback(async () => {
     setState("asking");

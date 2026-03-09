@@ -112,46 +112,49 @@ function extractQuestionsFromResults(results: any[], company: string, category: 
   if (!results || !Array.isArray(results)) return [];
   
   const questions: any[] = [];
+  const seen = new Set<string>();
   const questionPatterns = [
-    // Question patterns with numbers
     /^\d+[\.\)]\s*(.+\?)/gm,
-    // Lines that end with question marks
     /^[^\n]*\?$/gm,
-    // Common interview question starters
-    /^(How would you|What would you|Why would you|Tell me about|Describe|Explain|Walk me through).*\?$/gm,
-    // Bullet points with questions
+    /^(How would you|What would you|Why would you|Tell me about|Describe|Explain|Walk me through|Design|Should|What is|What are|Why did|Why does).*\?$/gmi,
     /^[\-\*•]\s*(.+\?)/gm
   ];
+
+  function cleanQuestion(raw: string): string {
+    return raw
+      .replace(/^\d+[\.\)]\s*/, '')
+      .replace(/^[\-\*•]\s*/, '')
+      .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1') // strip markdown links
+      .replace(/\*+/g, '')  // strip bold/italic markers
+      .replace(/^#+\s*/, '') // strip heading markers
+      .replace(/\s+/g, ' ')
+      .trim();
+  }
 
   results.forEach(result => {
     if (!result.markdown) return;
     
     const content = result.markdown.toLowerCase();
-    
-    // Only process if it mentions the company and interview-related terms
-    if (content.includes(company.toLowerCase()) && 
-        (content.includes('interview') || content.includes('question'))) {
-      
-      questionPatterns.forEach(pattern => {
-        const matches = result.markdown.match(pattern);
-        if (matches) {
-          matches.forEach(match => {
-            let cleanQuestion = match.replace(/^\d+[\.\)]\s*/, '')
-                                   .replace(/^[\-\*•]\s*/, '')
-                                   .trim();
-            
-            if (cleanQuestion.length > 20 && cleanQuestion.length < 200 && 
-                cleanQuestion.endsWith('?') && !questions.find(q => q.question === cleanQuestion)) {
-              questions.push({
-                question: cleanQuestion,
-                isPopular: Math.random() > 0.7, // Randomly mark some as popular
-                source: result.url || 'web'
-              });
-            }
+    if (!(content.includes('interview') || content.includes('question'))) return;
+
+    questionPatterns.forEach(pattern => {
+      const matches = result.markdown.match(pattern);
+      if (!matches) return;
+      matches.forEach((match: string) => {
+        const cleaned = cleanQuestion(match);
+        const lower = cleaned.toLowerCase();
+        if (cleaned.length >= 20 && cleaned.length <= 200 && cleaned.endsWith('?') &&
+            !lower.includes('practice') && !lower.includes('sign up') && !lower.includes('click here') &&
+            !seen.has(lower)) {
+          seen.add(lower);
+          questions.push({
+            question: cleaned,
+            isPopular: lower.includes('common') || lower.includes('popular') || Math.random() > 0.7,
+            source: result.url || 'web'
           });
         }
       });
-    }
+    });
   });
 
   return questions;

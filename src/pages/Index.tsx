@@ -6,9 +6,10 @@ import AudioIndicator from "@/components/AudioIndicator";
 import ResponseArea from "@/components/ResponseArea";
 import InterviewHeader from "@/components/InterviewHeader";
 import CategoryPicker, { type InterviewCategory } from "@/components/CategoryPicker";
+import QuestionPicker, { type SpecificQuestion } from "@/components/QuestionPicker";
 import { streamChat, type ChatMessage } from "@/lib/streamChat";
 
-type InterviewState = "idle" | "selecting" | "asking" | "waiting" | "processing" | "complete";
+type InterviewState = "idle" | "selecting" | "selecting-question" | "asking" | "waiting" | "processing" | "complete";
 
 const Index = () => {
   const [state, setState] = useState<InterviewState>("idle");

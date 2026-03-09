@@ -47,6 +47,11 @@ describe("ResponseArea", () => {
     render(<ResponseArea onSubmit={vi.fn()} isWaiting />);
     fireEvent.click(screen.getByRole("button", { name: /start voice input/i }));
     expect(start).toHaveBeenCalledTimes(1);
+    expect(start).toHaveBeenCalledWith(
+      expect.any(Function),
+      expect.any(Function),
+      expect.any(Function)
+    );
   });
 
   it("calls stop when mic button is clicked while listening", () => {

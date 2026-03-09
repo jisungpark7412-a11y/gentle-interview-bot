@@ -1,25 +1,29 @@
-export type ChatMessage = { role: "user" | "assistant"; content: string };
+import type { InterviewCategory } from "@/components/CategoryPicker";
+import type { SpecificQuestion } from "@/components/QuestionPicker";
+
+export interface ChatMessage {
+  role: "user" | "assistant";
+  content: string;
+}
+
+interface StreamChatOptions {
+  messages: ChatMessage[];
+  category: InterviewCategory;
+  specificQuestion?: SpecificQuestion | null;
+  onDelta: (text: string) => void;
+  onDone: () => void;
+}
 
 const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/interview-chat`;
 
-export async function streamChat({
-  messages,
-  category,
-  onDelta,
-  onDone,
-}: {
-  messages: ChatMessage[];
-  category?: string;
-  onDelta: (text: string) => void;
-  onDone: () => void;
-}) {
+export async function streamChat({ messages, category, specificQuestion, onDelta, onDone }: StreamChatOptions) {
   const resp = await fetch(CHAT_URL, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
     },
-    body: JSON.stringify({ messages, category }),
+    body: JSON.stringify({ messages, category, specificQuestion }),
   });
 
   if (!resp.ok || !resp.body) {

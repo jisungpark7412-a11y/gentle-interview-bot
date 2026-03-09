@@ -192,7 +192,7 @@ const QuestionPicker = ({ category, onSelect, onBack }: QuestionPickerProps) => 
                       </label>
                       {question.isPopular && (
                         <div className="flex items-center gap-1 mt-1">
-                          <Flame size={12} className="text-orange-500" />
+                          <Flame size={12} className="text-orange-500 dark:text-orange-400" />
                           <span className="text-xs text-orange-600 dark:text-orange-400 font-medium">
                             Popular Question
                           </span>

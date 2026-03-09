@@ -2,6 +2,7 @@ import { useState, useCallback, useRef } from "react";
 import { toast } from "sonner";
 import AIOrb from "@/components/AIOrb";
 import QuestionDisplay from "@/components/QuestionDisplay";
+import AudioIndicator from "@/components/AudioIndicator";
 import ResponseArea from "@/components/ResponseArea";
 import InterviewHeader from "@/components/InterviewHeader";
 import CategoryPicker, { type InterviewCategory } from "@/components/CategoryPicker";
@@ -12,6 +13,7 @@ type InterviewState = "idle" | "selecting" | "selecting-question" | "asking" | "
 
 const Index = () => {
   const [state, setState] = useState<InterviewState>("idle");
+  const [isAudioActive, setIsAudioActive] = useState(false);
   const [currentQuestion, setCurrentQuestion] = useState("");
   const [questionCount, setQuestionCount] = useState(0);
   const messagesRef = useRef<ChatMessage[]>([]);
@@ -80,6 +82,10 @@ const Index = () => {
     [fetchNextQuestion]
   );
 
+  const toggleAudio = useCallback(() => {
+    setIsAudioActive((prev) => !prev);
+  }, []);
+
   return (
     <div className="relative min-h-screen flex flex-col bg-background overflow-hidden">
       {/* Ambient background gradient */}
@@ -97,7 +103,7 @@ const Index = () => {
 
       <main className="flex-1 flex flex-col items-center justify-center gap-10 pb-8 relative z-10">
         {/* AI Orb */}
-        <AIOrb isListening={state === "waiting"} />
+        <AIOrb isListening={state === "waiting" || isAudioActive} />
 
         {/* Welcome / Question / Complete */}
         {state === "idle" ? (
@@ -154,6 +160,13 @@ const Index = () => {
         {state === "waiting" && (
           <ResponseArea onSubmit={handleResponse} isWaiting />
         )}
+
+        {/* Audio Indicator */}
+        <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-20">
+          <button onClick={toggleAudio} className="outline-none">
+            <AudioIndicator isActive={isAudioActive} />
+          </button>
+        </div>
       </main>
     </div>
   );

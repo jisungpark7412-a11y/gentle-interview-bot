@@ -11,6 +11,7 @@ const InterviewHeader = ({
   questionNumber,
   totalQuestions,
   isActive,
+  onLogoClick,
 }: InterviewHeaderProps) => {
   return (
     <header className="relative z-10 flex items-center justify-between px-6 md:px-10 py-5">

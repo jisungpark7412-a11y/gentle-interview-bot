@@ -102,23 +102,10 @@ serve(async (req) => {
     
     // If a specific question is provided, modify the system prompt to start with that question
     if (specificQuestion && messages.length === 0) {
-      // Build personalization context
-      let personalizationContext = "";
-      if (specificQuestion.company && specificQuestion.isPersonalized) {
-        personalizationContext = `\n\nPERSONALIZATION CONTEXT:
-This interview is specifically for ${specificQuestion.company}. When asking follow-up questions:
-- Reference ${specificQuestion.company}'s products, services, and market position when relevant
-- Ask questions that would be particularly relevant to someone joining ${specificQuestion.company}
-- Consider ${specificQuestion.company}'s known challenges, opportunities, and competitive landscape
-- Tailor examples and scenarios to ${specificQuestion.company}'s business model and industry`;
-      } else if (specificQuestion.company) {
-        personalizationContext = `\n\nNOTE: The candidate mentioned they're interviewing for ${specificQuestion.company}. You may reference this context naturally but focus on general product management principles.`;
-      }
-
       systemPrompt = systemPrompt.replace(
         /1\. Start with: "[^"]*"/,
         `1. Start with: "${specificQuestion.question}"`
-      ) + personalizationContext;
+      );
       
       // For behavioral questions, adjust the specific prompts
       if (category === "behavioral") {
@@ -136,7 +123,7 @@ Rules:
 - Reference the candidate's previous answers to make follow-ups feel natural.
 - Use the STAR method (Situation, Task, Action, Result) to guide probing questions.
 - When wrapping up, mention 1-2 specific strengths and 1 area to improve.
-- End with: "[INTERVIEW_COMPLETE]" on its own line when the interview is done.${personalizationContext}`;
+- End with: "[INTERVIEW_COMPLETE]" on its own line when the interview is done.`;
       }
     }
 

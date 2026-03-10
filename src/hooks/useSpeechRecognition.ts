@@ -1,14 +1,31 @@
 import { useRef, useState, useEffect, useCallback } from "react";
 
+interface SpeechRecognitionAPI {
+  new (): SpeechRecognitionInstance;
+}
+
+interface SpeechRecognitionInstance {
+  continuous: boolean;
+  interimResults: boolean;
+  lang: string;
+  onresult: ((event: any) => void) | null;
+  onend: (() => void) | null;
+  onerror: ((event: any) => void) | null;
+  start(): void;
+  stop(): void;
+  abort(): void;
+}
+
 declare global {
   interface Window {
-    webkitSpeechRecognition: typeof SpeechRecognition;
+    SpeechRecognition?: SpeechRecognitionAPI;
+    webkitSpeechRecognition?: SpeechRecognitionAPI;
   }
 }
 
 export function useSpeechRecognition() {
   const [isListening, setIsListening] = useState(false);
-  const recognitionRef = useRef<SpeechRecognition | null>(null);
+  const recognitionRef = useRef<SpeechRecognitionInstance | null>(null);
 
   const isSupported =
     typeof window !== "undefined" &&

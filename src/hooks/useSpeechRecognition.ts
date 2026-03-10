@@ -25,7 +25,7 @@ declare global {
 
 export function useSpeechRecognition() {
   const [isListening, setIsListening] = useState(false);
-  const recognitionRef = useRef<SpeechRecognition | null>(null);
+  const recognitionRef = useRef<SpeechRecognitionInstance | null>(null);
 
   const isSupported =
     typeof window !== "undefined" &&

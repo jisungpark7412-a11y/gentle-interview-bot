@@ -98,66 +98,57 @@ const Index = () => {
         onLogoClick={() => setState("idle")}
       />
 
-      <main className="flex-1 flex flex-col items-center justify-center gap-10 pb-8 relative z-10">
-        {/* AI Orb */}
-        <AIOrb isListening={state === "waiting"} />
+      {state === "idle" ? (
+        <main className="flex-1 relative z-10">
+          <HeroSection onGetStarted={() => setState("selecting")} />
+          <ValuePropsSection />
+          <OfferingsSection onStartPractice={() => setState("selecting")} />
+        </main>
+      ) : (
+        <main className="flex-1 flex flex-col items-center justify-center gap-10 pb-8 relative z-10">
+          {/* AI Orb */}
+          <AIOrb isListening={state === "waiting"} />
 
-        {/* Welcome / Question / Complete */}
-        {state === "idle" ? (
-          <div className="text-center space-y-6 animate-fade-up">
-            <h1 className="text-4xl md:text-5xl font-display font-bold tracking-tight text-foreground">
-              Ready to Practice?
-            </h1>
-            <p className="text-lg text-muted-foreground max-w-md mx-auto leading-relaxed">
-              Your AI interviewer will guide you through a practice interview.
-              Take your time and answer naturally.
-            </p>
-            <button
-              onClick={() => setState("selecting")}
-              className="mt-4 px-8 py-3.5 rounded-2xl bg-primary text-primary-foreground font-display font-semibold text-base hover:brightness-110 transition-all duration-200 shadow-lg shadow-primary/20"
-            >
-              Get Started
-            </button>
-          </div>
-        ) : state === "selecting" ? (
-          <CategoryPicker onSelect={selectCategory} />
-        ) : state === "selecting-question" ? (
-          <QuestionPicker 
-            category={selectedCategoryRef.current}
-            onSelect={startInterview}
-            onBack={() => setState("selecting")}
-          />
-        ) : state === "complete" ? (
-          <div className="text-center space-y-6 animate-fade-up max-w-2xl mx-auto px-4">
-            <h1 className="text-4xl md:text-5xl font-display font-bold tracking-tight text-foreground">
-              Interview Complete
-            </h1>
-            <p className="text-lg text-muted-foreground leading-relaxed whitespace-pre-line">
-              {currentQuestion}
-            </p>
-            <button
-              onClick={() => setState("selecting")}
-              className="mt-4 px-8 py-3.5 rounded-2xl bg-primary text-primary-foreground font-display font-semibold text-base hover:brightness-110 transition-all duration-200 shadow-lg shadow-primary/20"
-            >
-              Practice Again
-            </button>
-          </div>
-        ) : state === "processing" ? (
-          <div className="text-center animate-subtle-pulse">
-            <p className="text-muted-foreground text-lg">Thinking...</p>
-          </div>
-        ) : (
-          <QuestionDisplay
-            question={currentQuestion}
-            isRevealing={state === "asking"}
-          />
-        )}
+          {state === "selecting" ? (
+            <CategoryPicker onSelect={selectCategory} />
+          ) : state === "selecting-question" ? (
+            <QuestionPicker
+              category={selectedCategoryRef.current}
+              onSelect={startInterview}
+              onBack={() => setState("selecting")}
+            />
+          ) : state === "complete" ? (
+            <div className="text-center space-y-6 animate-fade-up max-w-2xl mx-auto px-4">
+              <h1 className="text-4xl md:text-5xl font-display font-bold tracking-tight text-foreground">
+                Interview Complete
+              </h1>
+              <p className="text-lg text-muted-foreground leading-relaxed whitespace-pre-line">
+                {currentQuestion}
+              </p>
+              <button
+                onClick={() => setState("selecting")}
+                className="mt-4 px-8 py-3.5 rounded-2xl bg-primary text-primary-foreground font-display font-semibold text-base hover:brightness-110 transition-all duration-200 shadow-lg shadow-primary/20"
+              >
+                Practice Again
+              </button>
+            </div>
+          ) : state === "processing" ? (
+            <div className="text-center animate-subtle-pulse">
+              <p className="text-muted-foreground text-lg">Thinking...</p>
+            </div>
+          ) : (
+            <QuestionDisplay
+              question={currentQuestion}
+              isRevealing={state === "asking"}
+            />
+          )}
 
-        {/* Response Input */}
-        {state === "waiting" && (
-          <ResponseArea onSubmit={handleResponse} isWaiting />
-        )}
-      </main>
+          {/* Response Input */}
+          {state === "waiting" && (
+            <ResponseArea onSubmit={handleResponse} isWaiting />
+          )}
+        </main>
+      )}
     </div>
   );
 };

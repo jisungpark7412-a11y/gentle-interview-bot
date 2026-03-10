@@ -145,7 +145,7 @@ describe("useSpeechRecognition", () => {
 
     // Replace the mock so the second call gets a fresh instance
     const secondInstance = makeMockRecognition();
-    (window.SpeechRecognition as unknown as ReturnType<typeof vi.fn>).mockReturnValueOnce(secondInstance);
+    ((window as any).SpeechRecognition as ReturnType<typeof vi.fn>).mockReturnValueOnce(secondInstance);
 
     // Second start — should abort the first instance first
     act(() => {

@@ -6,6 +6,9 @@ import ResponseArea from "@/components/ResponseArea";
 import InterviewHeader from "@/components/InterviewHeader";
 import CategoryPicker, { type InterviewCategory } from "@/components/CategoryPicker";
 import QuestionPicker, { type SpecificQuestion } from "@/components/QuestionPicker";
+import HeroSection from "@/components/landing/HeroSection";
+import ValuePropsSection from "@/components/landing/ValuePropsSection";
+import OfferingsSection from "@/components/landing/OfferingsSection";
 import { streamChat, type ChatMessage } from "@/lib/streamChat";
 
 type InterviewState = "idle" | "selecting" | "selecting-question" | "asking" | "waiting" | "processing" | "complete";

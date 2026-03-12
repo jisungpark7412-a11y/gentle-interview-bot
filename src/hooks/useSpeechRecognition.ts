@@ -23,6 +23,8 @@ declare global {
   }
 }
 
+const SILENCE_DELAY_MS = 3000;
+
 export function useSpeechRecognition() {
   const [isListening, setIsListening] = useState(false);
   const recognitionRef = useRef<SpeechRecognitionInstance | null>(null);
@@ -48,33 +50,52 @@ export function useSpeechRecognition() {
 
     const Recognizer = window.SpeechRecognition || window.webkitSpeechRecognition;
     const recognition = new Recognizer();
-    recognition.continuous = false;
+    recognition.continuous = true;
     recognition.interimResults = true;
     recognition.lang = "en-US";
 
+    let accumulated = "";
+    let silenceTimer: ReturnType<typeof setTimeout> | null = null;
+    let submitted = false;
+
+    const doSubmit = () => {
+      if (submitted) return;
+      submitted = true;
+      if (silenceTimer) { clearTimeout(silenceTimer); silenceTimer = null; }
+      recognition.abort();
+      if (accumulated.trim()) onFinal(accumulated.trim());
+    };
+
     recognition.onresult = (event) => {
       let interim = "";
-      let final = "";
       for (let i = event.resultIndex; i < event.results.length; i++) {
-        const transcript = event.results[i][0].transcript;
+        const t = event.results[i][0].transcript;
         if (event.results[i].isFinal) {
-          final += transcript;
+          accumulated += (accumulated ? " " : "") + t.trim();
         } else {
-          interim += transcript;
+          interim += t;
         }
       }
-      if (final) {
-        onFinal(final);
-      } else {
-        onInterim(interim);
-      }
+
+      const display = accumulated + (interim ? (accumulated ? " " : "") + interim : "");
+      onInterim(display);
+
+      if (silenceTimer) clearTimeout(silenceTimer);
+      silenceTimer = setTimeout(doSubmit, SILENCE_DELAY_MS);
     };
 
     recognition.onend = () => {
       setIsListening(false);
+      if (silenceTimer) { clearTimeout(silenceTimer); silenceTimer = null; }
+      if (!submitted && accumulated.trim()) {
+        submitted = true;
+        onFinal(accumulated.trim());
+      }
     };
 
     recognition.onerror = (event) => {
+      if (event.error === "aborted") return;
+      if (silenceTimer) { clearTimeout(silenceTimer); silenceTimer = null; }
       setIsListening(false);
       onError(event.error);
     };

@@ -10,6 +10,7 @@ export interface SpecificQuestion {
   id: string;
   question: string;
   isPopular?: boolean;
+  company?: string;
 }
 
 const CATEGORY_QUESTIONS: Record<InterviewCategory, SpecificQuestion[]> = {
@@ -60,6 +61,25 @@ const CATEGORY_QUESTIONS: Record<InterviewCategory, SpecificQuestion[]> = {
     {
       id: "grow-new-product",
       question: "How would you grow a new product in a new market?",
+    },
+    {
+      id: "improve-instagram-stories",
+      question: "How would you improve Instagram Stories?",
+      company: "Meta",
+    },
+    {
+      id: "product-to-sell-antiques",
+      question: "How would you build a product to sell antiques?",
+      company: "Google",
+    },
+    {
+      id: "web-search-for-child",
+      question: "How would you add a web search engine for a child?",
+    },
+    {
+      id: "dog-poop-problem",
+      question: "Build a product to solve the dog poop problem",
+      company: "Google",
     },
   ],
   product_strategy: [
@@ -190,12 +210,21 @@ const QuestionPicker = ({ category, onSelect, onBack }: QuestionPickerProps) => 
                       >
                         {question.question}
                       </label>
-                      {question.isPopular && (
-                        <div className="flex items-center gap-1 mt-1">
-                          <Flame size={12} className="text-orange-500 dark:text-orange-400" />
-                          <span className="text-xs text-orange-600 dark:text-orange-400 font-medium">
-                            Popular Question
-                          </span>
+                      {(question.isPopular || question.company) && (
+                        <div className="flex items-center gap-2 mt-1 flex-wrap">
+                          {question.isPopular && (
+                            <div className="flex items-center gap-1">
+                              <Flame size={12} className="text-orange-500 dark:text-orange-400" />
+                              <span className="text-xs text-orange-600 dark:text-orange-400 font-medium">
+                                Popular Question
+                              </span>
+                            </div>
+                          )}
+                          {question.company && (
+                            <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20">
+                              Asked at {question.company}
+                            </span>
+                          )}
                         </div>
                       )}
                     </div>

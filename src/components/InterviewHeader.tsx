@@ -1,10 +1,11 @@
-import { BrainCircuit } from "lucide-react";
+import { BrainCircuit, ArrowLeft } from "lucide-react";
 
 interface InterviewHeaderProps {
   questionNumber: number;
   totalQuestions: number;
   isActive: boolean;
   onLogoClick?: () => void;
+  onBack?: () => void;
 }
 
 const InterviewHeader = ({
@@ -12,17 +13,29 @@ const InterviewHeader = ({
   totalQuestions,
   isActive,
   onLogoClick,
+  onBack,
 }: InterviewHeaderProps) => {
   return (
     <header className="relative z-10 flex items-center justify-between px-6 md:px-10 py-5">
-      <button onClick={onLogoClick} className="flex items-center gap-3 hover:opacity-80 transition-opacity">
-        <div className="flex items-center justify-center w-9 h-9 rounded-xl bg-primary/10 border border-primary/20">
-          <BrainCircuit size={18} className="text-primary" />
-        </div>
-        <span className="font-display font-semibold text-foreground tracking-tight">
-          InterviewAI
-        </span>
-      </button>
+      <div className="flex items-center gap-4">
+        {onBack && (
+          <button
+            onClick={onBack}
+            className="flex items-center gap-1.5 text-muted-foreground hover:text-foreground transition-colors text-sm"
+          >
+            <ArrowLeft size={16} />
+            Back
+          </button>
+        )}
+        <button onClick={onLogoClick} className="flex items-center gap-3 hover:opacity-80 transition-opacity">
+          <div className="flex items-center justify-center w-9 h-9 rounded-xl bg-primary/10 border border-primary/20">
+            <BrainCircuit size={18} className="text-primary" />
+          </div>
+          <span className="font-display font-semibold text-foreground tracking-tight">
+            InterviewAI
+          </span>
+        </button>
+      </div>
 
       {isActive && (
         <div className="flex items-center gap-4">

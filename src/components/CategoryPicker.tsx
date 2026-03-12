@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { BrainCircuit, Users, Target, BarChart3, LineChart } from "lucide-react";
+import { BrainCircuit, Users, Target, BarChart3, LineChart, ArrowLeft } from "lucide-react";
 
 export type InterviewCategory =
   | "behavioral"
@@ -50,14 +50,25 @@ const categories: CategoryOption[] = [
 
 interface CategoryPickerProps {
   onSelect: (category: InterviewCategory) => void;
+  onBack?: () => void;
 }
 
-const CategoryPicker = ({ onSelect }: CategoryPickerProps) => {
+const CategoryPicker = ({ onSelect, onBack }: CategoryPickerProps) => {
   const [selected, setSelected] = useState<InterviewCategory | null>(null);
 
   return (
     <div className="text-center space-y-8 animate-fade-up max-w-2xl mx-auto px-4">
       <div className="space-y-3">
+        {onBack && (
+          <div className="flex items-center justify-center">
+            <button
+              onClick={onBack}
+              className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <ArrowLeft size={16} />
+            </button>
+          </div>
+        )}
         <h1 className="text-4xl md:text-5xl font-display font-bold tracking-tight text-foreground">
           Choose Your Focus
         </h1>

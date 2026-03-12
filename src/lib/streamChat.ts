@@ -2,7 +2,7 @@ import type { InterviewCategory } from "@/components/CategoryPicker";
 import type { SpecificQuestion } from "@/components/QuestionPicker";
 
 export interface ChatMessage {
-  role: "user" | "assistant";
+  role: "user" | "assistant" | "system";
   content: string;
 }
 
@@ -10,20 +10,25 @@ interface StreamChatOptions {
   messages: ChatMessage[];
   category: InterviewCategory;
   specificQuestion?: SpecificQuestion | null;
+  systemPromptOverride?: string;
   onDelta: (text: string) => void;
   onDone: () => void;
 }
 
 const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/interview-chat`;
 
-export async function streamChat({ messages, category, specificQuestion, onDelta, onDone }: StreamChatOptions) {
+export async function streamChat({ messages, category, specificQuestion, systemPromptOverride, onDelta, onDone }: StreamChatOptions) {
+  const outgoingMessages = systemPromptOverride
+    ? [{ role: "system" as const, content: systemPromptOverride }, ...messages]
+    : messages;
+
   const resp = await fetch(CHAT_URL, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
     },
-    body: JSON.stringify({ messages, category, specificQuestion }),
+    body: JSON.stringify({ messages: outgoingMessages, category, specificQuestion }),
   });
 
   if (!resp.ok || !resp.body) {

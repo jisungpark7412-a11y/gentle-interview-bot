@@ -10,6 +10,8 @@ import HeroSection from "@/components/landing/HeroSection";
 import ValuePropsSection from "@/components/landing/ValuePropsSection";
 import OfferingsSection from "@/components/landing/OfferingsSection";
 import { streamChat, type ChatMessage } from "@/lib/streamChat";
+import { buildProductSensePrompt } from "@/lib/productSensePrompt";
+import FeedbackDisplay from "@/components/FeedbackDisplay";
 
 type InterviewState = "idle" | "selecting" | "selecting-question" | "asking" | "waiting" | "processing" | "complete";
 
@@ -32,6 +34,7 @@ const Index = () => {
         messages: messagesRef.current,
         category: categoryRef.current,
         specificQuestion: specificQuestionRef.current,
+        systemPromptOverride: categoryRef.current === "product_sense" ? buildProductSensePrompt(specificQuestionRef.current?.question) : undefined,
         onDelta: (chunk) => {
           fullText += chunk;
           // Strip the completion marker from display
@@ -96,6 +99,11 @@ const Index = () => {
         totalQuestions={4}
         isActive={state !== "idle" && state !== "selecting" && state !== "selecting-question" && state !== "complete"}
         onLogoClick={() => setState("idle")}
+        onBack={
+          state === "asking" || state === "waiting" || state === "processing"
+            ? () => setState("selecting")
+            : undefined
+        }
       />
 
       {state === "idle" ? (
@@ -110,7 +118,7 @@ const Index = () => {
           <AIOrb isListening={state === "waiting"} />
 
           {state === "selecting" ? (
-            <CategoryPicker onSelect={selectCategory} />
+            <CategoryPicker onSelect={selectCategory} onBack={() => setState("idle")} />
           ) : state === "selecting-question" ? (
             <QuestionPicker
               category={selectedCategoryRef.current}
@@ -118,19 +126,19 @@ const Index = () => {
               onBack={() => setState("selecting")}
             />
           ) : state === "complete" ? (
-            <div className="text-center space-y-6 animate-fade-up max-w-2xl mx-auto px-4">
-              <h1 className="text-4xl md:text-5xl font-display font-bold tracking-tight text-foreground">
+            <div className="w-full space-y-6 animate-fade-up">
+              <h1 className="text-3xl md:text-4xl font-display font-bold tracking-tight text-foreground text-center px-4">
                 Interview Complete
               </h1>
-              <p className="text-lg text-muted-foreground leading-relaxed whitespace-pre-line">
-                {currentQuestion}
-              </p>
-              <button
-                onClick={() => setState("selecting")}
-                className="mt-4 px-8 py-3.5 rounded-2xl bg-primary text-primary-foreground font-display font-semibold text-base hover:brightness-110 transition-all duration-200 shadow-lg shadow-primary/20"
-              >
-                Practice Again
-              </button>
+              <FeedbackDisplay feedbackText={currentQuestion} />
+              <div className="flex justify-center pb-4">
+                <button
+                  onClick={() => setState("selecting")}
+                  className="px-8 py-3.5 rounded-2xl bg-primary text-primary-foreground font-display font-semibold text-base hover:brightness-110 transition-all duration-200 shadow-lg shadow-primary/20"
+                >
+                  Practice Again
+                </button>
+              </div>
             </div>
           ) : state === "processing" ? (
             <div className="text-center animate-subtle-pulse">

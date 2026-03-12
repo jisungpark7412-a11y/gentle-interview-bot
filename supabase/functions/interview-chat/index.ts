@@ -94,11 +94,11 @@ serve(async (req) => {
   }
 
   try {
-    const { messages, category, specificQuestion } = await req.json();
+    const { messages, category, specificQuestion, systemPrompt: systemPromptOverride } = await req.json();
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
-    let systemPrompt = SYSTEM_PROMPTS[category] || SYSTEM_PROMPTS.product_sense;
+    let systemPrompt = systemPromptOverride || SYSTEM_PROMPTS[category] || SYSTEM_PROMPTS.product_sense;
     
     // If a specific question is provided, modify the system prompt to start with that question
     if (specificQuestion && messages.length === 0) {

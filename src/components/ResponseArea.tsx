@@ -1,4 +1,4 @@
-import { Send, Mic, MicOff } from "lucide-react";
+import { Send, Mic } from "lucide-react";
 import { useState, useRef, useCallback } from "react";
 import { toast } from "sonner";
 import { useSpeechRecognition } from "@/hooks/useSpeechRecognition";
@@ -41,9 +41,11 @@ const ResponseArea = ({ onSubmit, isWaiting }: ResponseAreaProps) => {
         setIsInterim(true);
       },
       (final) => {
-        setResponse(final);
+        setResponse("");
         setIsInterim(false);
-        setTimeout(() => textareaRef.current?.focus(), 0);
+        if (final.trim()) {
+          onSubmit(final.trim());
+        }
       },
       (error) => {
         setIsInterim(false);
@@ -87,13 +89,13 @@ const ResponseArea = ({ onSubmit, isWaiting }: ResponseAreaProps) => {
             aria-label={isListening ? "Stop voice input" : "Start voice input"}
             className={`relative flex-shrink-0 flex items-center justify-center w-10 h-10 rounded-xl transition-all duration-200 ${
               isListening
-                ? "bg-primary/10 text-primary"
+                ? "bg-primary text-primary-foreground scale-110 shadow-lg shadow-primary/30"
                 : "bg-secondary text-muted-foreground hover:text-foreground"
             }`}
           >
-            {isListening ? <MicOff size={18} /> : <Mic size={18} />}
+            <Mic size={18} />
             {isListening && (
-              <span className="absolute inset-0 rounded-xl border border-primary/40 animate-ripple" />
+              <span className="absolute inset-0 rounded-xl border-2 border-primary animate-ripple" />
             )}
           </button>
         )}
